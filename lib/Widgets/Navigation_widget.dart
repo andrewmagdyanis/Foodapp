@@ -31,7 +31,7 @@ class _HomeState extends State<Home> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("Foodapp"),
+        title: Text("Food App"),
         backgroundColor: kPrimaryColor,
         actions: [
           IconButton(
@@ -46,7 +46,7 @@ class _HomeState extends State<Home> {
                     ));
               }),
           IconButton(
-            icon: Icon(Icons.undo),
+            icon: Icon(Icons.logout),
             onPressed: () async {
               try {
                 AuthService auth = Provider.of(context).auth;

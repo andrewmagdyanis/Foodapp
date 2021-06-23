@@ -24,33 +24,57 @@ class _HomePageState extends State<HomePage> {
     return BlocProvider<AppCubit>(
       create: (BuildContext context) => AppCubit(),
       child: Container(
+        margin: EdgeInsets.only(top: 15),
         child: Column(
           children: <Widget>[
+            Text(
+              "<     19-06-2021     > ",
+              style: TextStyle(fontSize: 20),
+            ),
             BlocConsumer<AppCubit, AppStates>(
                 listener: (BuildContext context, AppStates states) {},
                 builder: (BuildContext context, AppStates states) {
                   AppCubit cubit = AppCubit.instance(context);
+                  double diff = 2000 - cubit.sum;
                   return Column(children: [
-                    Padding(
-                      padding: const EdgeInsets.only(top: 10.0),
+                    Container(
+                      margin: const EdgeInsets.all(10.0),
                       child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        mainAxisSize: MainAxisSize.max,
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text('${cubit.sum} Eaten'),
-                          CircularPercentIndicator(
-                            radius: 125.0,
-                            lineWidth: 5.0,
-                            animation: true,
-                            backgroundColor: Colors.white,
-                            percent: 0.7,
-                            center: Text(
-                              "${2000.0 - cubit.sum} Kcal",
-                              style: TextStyle(fontSize: 20),
+                          Expanded(
+                            child: Text(
+                              '${cubit.sum} Eaten',
+                              style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                              maxLines: 2,
+                              textAlign: TextAlign.center,
                             ),
-                            progressColor: kPrimaryColor,
-                            circularStrokeCap: CircularStrokeCap.round,
                           ),
-                          Text('... Burned')
+                          Expanded(
+                            flex: 3,
+                            child: CircularPercentIndicator(
+                              radius: 125.0,
+                              lineWidth: 5.0,
+                              animation: true,
+                              backgroundColor: Colors.grey[350],
+                              percent: diff / 2000.0,
+                              center: Text(
+                                "${diff.toStringAsFixed(2)} Kcal",
+                                style: TextStyle(fontSize: 20),
+                              ),
+                              progressColor: kPrimaryColor,
+                              circularStrokeCap: CircularStrokeCap.round,
+                            ),
+                          ),
+                          Expanded(
+                            child: Text(
+                              '.......... Burned',
+                              style: TextStyle(color: Colors.green,fontWeight: FontWeight.bold),
+                              maxLines: 2,
+                              textAlign: TextAlign.center,
+                            ),
+                          )
                         ],
                       ),
                     ),
@@ -127,10 +151,6 @@ class _HomePageState extends State<HomePage> {
                   Icon(Icons.arrow_drop_down)
                 ],
               ),
-            ),
-            Text(
-              "<     19-06-2021     > ",
-              style: TextStyle(fontSize: 20),
             ),
 
             Expanded(

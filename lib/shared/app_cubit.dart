@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get/get_core/get_core.dart';
 import 'package:sqflite/sqflite.dart';
 
 part 'app_state.dart';
@@ -33,7 +34,15 @@ class AppCubit extends Cubit<AppStates> {
       fat += element.data()['fat'];
       protein += element.data()['protein'];
     });
-    print(sum);
+
+    sum = double.parse(sum.toStringAsFixed(2));
+    carbs = double.parse(carbs.toStringAsFixed(2));
+    fat = double.parse(fat.toStringAsFixed(2));
+    protein = double.parse(protein.toStringAsFixed(2));
+    print(sum.toString());
+    print(carbs);
+    print(fat);
+    print(protein);
     emit(SumUpdated());
   }
 }
