@@ -1,8 +1,10 @@
 import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:food_app/Widgets/Provider_Auth.dart';
 import 'package:get/get_core/get_core.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -14,6 +16,7 @@ class DairyCubit extends Cubit<DairyStates> {
   static DairyCubit instance(BuildContext context) =>
       BlocProvider.of(context, listen: false);
 
+  List<QueryDocumentSnapshot> tripsList = [];
   double kCalSum = 0;
   double carbs = 0;
   double protein = 0;
@@ -29,17 +32,19 @@ class DairyCubit extends Cubit<DairyStates> {
   double saturatedFatPercent = 0;
   double dietaryFiberPercent = 0;
 
+  DateTime currentDate = DateTime.now();
+
   //
   // void sumKcal(double amount) {
   //   sum += amount;
   //   emit(SumUpdated());
   // }
 
-  void sumAll(List<QueryDocumentSnapshot> list) {
+  void sumAll() {
     print('sum called');
     kCalSum = carbs = fats = protein = sugars = saturatedFat = dietaryFiber = 0;
     List<num> ids = [];
-    list.forEach((element) {
+    tripsList.forEach((element) {
       Map<String, dynamic> data = element.data();
       kCalSum += data['kcal'];
       carbs += data['carbs'];
@@ -95,13 +100,14 @@ class DairyCubit extends Cubit<DairyStates> {
     fatPercent = carbsPercent = proteinPercent =
         dietaryFiberPercent = sugarsPercent = saturatedFatPercent = 0;
     double daySum = fats + carbs + protein;
-    fatPercent = fats / daySum;
-    carbsPercent = carbs / daySum;
-    proteinPercent = protein / daySum;
-
-    sugarsPercent = sugars / carbs;
-    dietaryFiberPercent = dietaryFiber / carbs;
-    saturatedFatPercent = saturatedFat / fats;
+    if (daySum != 0) {
+      fatPercent = fats / daySum;
+      carbsPercent = carbs / daySum;
+      proteinPercent = protein / daySum;
+    }
+    if (carbs != 0) sugarsPercent = sugars / carbs;
+    if (carbs != 0) dietaryFiberPercent = dietaryFiber / carbs;
+    if (fats != 0) saturatedFatPercent = saturatedFat / fats;
 
     fatPercent = double.parse((fatPercent * 100).toStringAsFixed(2));
     carbsPercent = double.parse((carbsPercent * 100).toStringAsFixed(2));
@@ -121,5 +127,38 @@ class DairyCubit extends Cubit<DairyStates> {
     print('Saturated Fat Percent: $saturatedFatPercent');
     print('Sugars Percent: $sugarsPercent');
     print('dietaryFiber Percent: $dietaryFiberPercent');
+  }
+
+  void updateCurrentDate(
+    DateTime date,
+  ) {
+    currentDate = date;
+    emit(CurrentDateUpdated());
+    getUsersTripsList();
+  }
+
+  Future<void> getUsersTripsList() async {
+    // final uid = await Provider.of(context).auth.getCurrentUID();
+    final uid = FirebaseAuth.instance.currentUser.uid;
+    var now = currentDate;
+    var start = Timestamp.fromDate(DateTime(now.year, now.month, now.day));
+    var end =
+        Timestamp.fromDate(DateTime(now.year, now.month, now.day, 23, 59, 59));
+    print('Now: $now');
+    print('Start: ${start.toDate()}');
+    print('End: ${end.toDate()}');
+    FirebaseFirestore.instance
+        .collection('userData')
+        .doc(uid)
+        .collection('food_intake')
+        .where('eatDate', isGreaterThanOrEqualTo: start)
+        .where('eatDate', isLessThanOrEqualTo: end)
+        .orderBy("eatDate", descending: true)
+        .get()
+        .then((myQuerySnapShot) {
+      List<QueryDocumentSnapshot> myList = myQuerySnapShot.docs;
+      tripsList = myList;
+      emit(GetUserTripsListState());
+    });
   }
 }
